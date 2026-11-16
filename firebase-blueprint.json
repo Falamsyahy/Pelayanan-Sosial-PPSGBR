@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Data rekam sosial anak binaan terpadu (BPSS)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID unik rekam sosial anak berformat [Urut]-[No. Kab/Kota]-[Angkatan Romawi]-[Tahun], contoh 1-26-III-2026",
+          "maxLength": 64
+        },
+        "nama": {
+          "type": "string",
+          "description": "Nama lengkap anak binaan",
+          "maxLength": 150
+        },
+        "umur": {
+          "type": "number",
+          "description": "Usia anak dalam tahun"
+        },
+        "gender": {
+          "type": "string",
+          "description": "Jenis kelamin anak",
+          "enum": ["Laki-laki", "Perempuan"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Status pembinaan anak",
+          "enum": [
+            "Calon Klien (Proses Seleksi)",
+            "Kasus Aktif",
+            "Terminasi (Selesai)",
+            "Referal (Rujukan)",
+            "Drop Out",
+            "Ditolak (Tidak Memenuhi Syarat)"
+          ]
+        },
+        "peksosEmail": {
+          "type": "string",
+          "description": "Email pekerja sosial pendamping",
+          "maxLength": 120
+        },
+        "riwayatPenyakit": {
+          "type": "array",
+          "description": "Daftar riwayat medis atau penyakit anak"
+        },
+        "pelaksanaanIntervensi": {
+          "type": "array",
+          "description": "Log catatan sesi layanan dan intervensi sosial"
+        },
+        "caseConferences": {
+          "type": "array",
+          "description": "Riwayat berita acara sidang kasus terpadu"
+        },
+        "berkasDigital": {
+          "type": "array",
+          "description": "Lampiran berkas digital klien (KK, Akta, KTP/KIA, foto, PDF terkompresi Base64)"
+        },
+        "kontrakPelayanan": {
+          "type": "object",
+          "description": "Data kontrak pelayanan sosial 3 bulan beserta kesepakatan dan tanda tangan"
+        },
+        "formData": {
+          "type": "object",
+          "description": "Formulir lengkap biodata, keluarga wali, asesmen BPSS, pemaknaan, dan intervensi"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Waktu pembaruan terakhir"
+        }
+      },
+      "required": ["id", "nama", "gender", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Profil pekerja sosial atau admin sistem",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "Email pekerja sosial",
+          "maxLength": 120
+        },
+        "nama": {
+          "type": "string",
+          "description": "Nama lengkap dan gelar",
+          "maxLength": 150
+        },
+        "role": {
+          "type": "string",
+          "description": "Peran akun",
+          "enum": ["peksos", "admin"]
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "Status penonaktifan akun oleh administrator"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Waktu pendaftaran akun"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "description": "Waktu masuk terakhir"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Waktu pembaruan profil terakhir"
+        }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/clients/{clientId}": {
+      "schema": {
+        "$ref": "#/entities/Client"
+      },
+      "description": "Koleksi data rekam sosial anak binaan"
+    },
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
+      },
+      "description": "Koleksi akun profil pekerja sosial"
+    }
+  }
+}

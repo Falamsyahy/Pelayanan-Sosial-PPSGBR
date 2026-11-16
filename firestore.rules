@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Default Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'falamsyahy@gmail.com' ||
+        request.auth.token.email == '199408162020121011@jabarprov.go.id'
+      );
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.disabled != true
+      );
+    }
+
+    function isValidClient(data) {
+      return data.id is string && data.id.size() <= 64
+        && data.nama is string && data.nama.size() <= 150
+        && data.gender in ['Laki-laki', 'Perempuan']
+        && data.status is string && data.status.size() <= 80;
+    }
+
+    function isValidUser(data) {
+      return data.email is string && data.email.size() <= 120
+        && (!('nama' in data) || (data.nama is string && data.nama.size() <= 150))
+        && (!('role' in data) || data.role in ['peksos', 'admin'])
+        && (!('disabled' in data) || data.disabled is bool);
+    }
+
+    // Collection: clients
+    match /clients/{clientId} {
+      allow get: if isSignedIn() && isValidId(clientId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(clientId)
+        && isValidClient(incoming());
+      allow update: if isSignedIn()
+        && isValidId(clientId)
+        && isValidClient(incoming());
+      allow delete: if isAdmin() && isValidId(clientId);
+    }
+
+    // Collection: users
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+      allow list: if isBootstrappedAdmin();
+      allow create: if isSignedIn()
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && (
+          isAdmin() ||
+          (
+            request.auth.uid == userId &&
+            incoming().role == 'peksos' &&
+            incoming().disabled == false
+          )
+        );
+      allow update: if isSignedIn()
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && (
+          isAdmin() ||
+          (
+            request.auth.uid == userId &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['nama', 'lastLoginAt', 'updatedAt'])
+          )
+        );
+      allow delete: if isAdmin() && isValidId(userId);
+    }
+
+    // Test connection endpoint
+    match /test/connection {
+      allow get: if true;
+    }
+  }
+}
