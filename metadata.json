@@ -1,6 +1,0 @@
-{
-  "name": "Sistem Rekam Sosial Anak Jawa Barat (RSA Jabar)",
-  "description": "Sistem Manajemen Kasus & Rekam Sosial Anak Terpadu (BPSS) Jawa Barat terintegrasi Gemini AI untuk perumusan pemaknaan teoretis dan rekomendasi intervensi sosial.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
